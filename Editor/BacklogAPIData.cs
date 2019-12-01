@@ -45,7 +45,7 @@ namespace Backlog
 		/// <summary>
 		/// ドメイン
 		/// </summary>
-		public string Domain = "backlog.jp";
+		public string Domain;
 		/// <summary>
 		/// プロジェクトキー
 		/// </summary>
