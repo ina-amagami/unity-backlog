@@ -65,10 +65,11 @@ namespace Backlog
 		/// <summary>
 		/// プロジェクト情報の取得
 		/// </summary>
-		public async Task LoadProjectInfo()
+		public async void LoadProjectInfo(System.Action onSuccess)
 		{
 			APIData = BacklogAPIData.Load();
 
+			// 認証
 			var client = new BacklogClient(APIData.SpaceKey, APIData.Domain);
 			await client.AuthorizeAsync(new OAuth2App()
 			{
@@ -78,14 +79,16 @@ namespace Backlog
 				CredentialsCachePath = APIData.CacheFileName,
 			});
 
+			// 各種データ取得
 			Space = client.GetSpaceAsync().Result.Content;
-
 			Project = client.GetProjectAsync(APIData.ProjectKey).Result.Content;
 			Data.TicketTypes = Project.GetTicketTypesAsync().Result.Content;
 			Data.Priorities = client.GetPriorityTypesAsync().Result.Content;
 			Data.Categories = Project.GetCategoriesAsync().Result.Content;
 			Data.Milestones = Project.GetMilestonesAsync().Result.Content;
 			Data.Users = Project.GetUsersAsync().Result.Content;
+			
+			onSuccess?.Invoke();
 		}
 
 		/// <summary>

@@ -20,8 +20,10 @@ namespace Backlog
 	{
 		private const string Path = "Project/BacklogAPI";
 
-		public BacklogAPISettings(string path, SettingsScope scope) : base(path, scope) { }
-		
+		public BacklogAPISettings(string path, SettingsScope scope) : base(path, scope)
+		{
+		}
+
 		/// <summary>
 		/// ProjectSettingsに項目追加
 		/// </summary>
@@ -35,15 +37,15 @@ namespace Backlog
 			};
 			return provider;
 		}
-		
+
 		private static SerializedObject so;
-		
+
 		public override void OnActivate(string searchContext, VisualElement rootElement)
 		{
 			// 設定ファイル取得
 			so = BacklogAPIData.GetSerializedObject();
 		}
-		
+
 		public override void OnGUI(string searchContext)
 		{
 			// プロパティの表示
@@ -51,15 +53,44 @@ namespace Backlog
 			EditorGUI.BeginChangeCheck();
 			while (iterator.NextVisible(true))
 			{
-				if (iterator.name.Equals("m_Script"))
-				{
-					continue;
-				}
+				bool isScript = iterator.name.Equals("m_Script");
+				if (isScript) { GUI.enabled = false; }
+				
 				EditorGUILayout.PropertyField(iterator);
+				
+				if (isScript) { GUI.enabled = true; }
 			}
 			if (EditorGUI.EndChangeCheck())
 			{
 				so.ApplyModifiedProperties();
+			}
+			
+			EditorGUILayout.Space();
+			
+			// データ検証用ボタン
+			using (new EditorGUILayout.HorizontalScope())
+			{
+				if (GUILayout.Button("スペースを開く"))
+				{
+					const string OpenURLFormat = "https://{0}.{1}/projects/{2}";
+					var data = BacklogAPIData.Load();
+					Application.OpenURL(string.Format(OpenURLFormat, data.SpaceKey, data.Domain, data.ProjectKey));
+				}
+				if (GUILayout.Button("認証テスト"))
+				{
+					var backlogAPI = new BacklogAPI();
+					try
+					{
+						backlogAPI.LoadProjectInfo(() =>
+						{
+							EditorUtility.DisplayDialog("認証成功", "BacklogAPIの認証に成功しました。", "OK");
+						});
+					}
+					catch (System.Exception e)
+					{
+						Debug.LogException(e);
+					}
+				}
 			}
 		}
 	}
