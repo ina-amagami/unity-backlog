@@ -72,9 +72,8 @@ namespace Backlog
 			{
 				if (GUILayout.Button("スペースを開く"))
 				{
-					const string OpenURLFormat = "https://{0}.{1}/projects/{2}";
 					var data = BacklogAPIData.Load();
-					Application.OpenURL(string.Format(OpenURLFormat, data.SpaceKey, data.Domain, data.ProjectKey));
+					Application.OpenURL($"https://{data.SpaceKey}.{data.Domain}/projects/{data.ProjectKey}");
 				}
 				if (GUILayout.Button("認証テスト"))
 				{

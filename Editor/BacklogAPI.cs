@@ -12,7 +12,6 @@ using UnityEngine;
 using NBacklog;
 using NBacklog.DataTypes;
 using NBacklog.OAuth2;
-using System.Threading.Tasks;
 
 namespace Backlog
 {
@@ -87,10 +86,10 @@ namespace Backlog
 			Data.Categories = Project.GetCategoriesAsync().Result.Content;
 			Data.Milestones = Project.GetMilestonesAsync().Result.Content;
 			Data.Users = Project.GetUsersAsync().Result.Content;
-			
+
 			onSuccess?.Invoke();
 		}
-
+		
 		/// <summary>
 		/// キーからチケットを取得
 		/// </summary>
@@ -140,8 +139,7 @@ namespace Backlog
 		/// </summary>
 		public void OpenBacklog()
 		{
-			const string OpenURLFormat = "https://{0}.{1}/find/{2}";
-			Application.OpenURL(string.Format(OpenURLFormat, Space.Key, APIData.Domain, Project.Key));
+			Application.OpenURL($"https://{Space.Key}.{APIData.Domain}/find/{Project.Key}");
 		}
 
 		/// <summary>
@@ -149,8 +147,7 @@ namespace Backlog
 		/// </summary>
 		public void OpenBacklogTicket(Ticket ticket)
 		{
-			const string OpenURLFormat = "https://{0}.{1}/view/{2}";
-			Application.OpenURL(string.Format(OpenURLFormat, Space.Key, APIData.Domain, ticket.Key));
+			Application.OpenURL($"https://{Space.Key}.{APIData.Domain}/view/{ticket.Key}");
 		}
 	}
 }
