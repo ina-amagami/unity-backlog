@@ -7,6 +7,7 @@ This software is released under the MIT License.
 https://opensource.org/licenses/mit-license.php
 */
 
+using System;
 using System.Linq;
 using UnityEngine;
 using NBacklog;
@@ -104,7 +105,12 @@ namespace Backlog
 		public Ticket AddTicket(Ticket ticket)
 		{
 			var res = Project.AddTicketAsync(ticket).Result;
-			return GetTicketOrRetryByResult(res, ticket);
+			if (CheckIsRetry(res))
+			{
+				// トランザクション系のエラーだったらリトライ
+				res = Project.AddTicketAsync(ticket).Result;
+			}
+			return GetResult(res);
 		}
 
 		/// <summary>
@@ -113,25 +119,48 @@ namespace Backlog
 		public Ticket UpdateTicket(Ticket ticket)
 		{
 			var res = Project.UpdateTicketAsync(ticket).Result;
-			return GetTicketOrRetryByResult(res, ticket);
+			if (CheckIsRetry(res))
+			{
+				// トランザクション系のエラーだったらリトライ
+				res = Project.UpdateTicketAsync(ticket).Result;
+			}
+			return GetResult(res);
+		}
+		
+		/// <summary>
+		/// スペースに添付ファイルを追加
+		/// </summary>
+		public Attachment AddAttachment(string filePath)
+		{
+			var fileInfo = new System.IO.FileInfo(filePath);
+			var res = Space.AddAttachment(fileInfo).Result;
+			if (CheckIsRetry(res))
+			{
+				// トランザクション系のエラーだったらリトライ
+				res = Space.AddAttachment(fileInfo).Result;
+			}
+			return GetResult(res);
 		}
 
 		/// <summary>
-		/// トランザクション系のエラーだったら１回だけリトライ
-		/// 成功してたらチケットを取得
+		/// トランザクション系のエラーで失敗しているかチェック
 		/// </summary>
-		public Ticket GetTicketOrRetryByResult(BacklogResponse<Ticket> res, Ticket ticket)
+		public bool CheckIsRetry<T>(BacklogResponse<T> res)
 		{
-			if (!res.IsSuccess && res.Errors.Any(x => x.Message.StartsWith("Deadlock")))
+			return !res.IsSuccess && res.Errors.Any(x => x.Message.StartsWith("Deadlock"));
+		}
+
+		/// <summary>
+		/// レスポンスの結果を取得
+		/// </summary>
+		public T GetResult<T>(BacklogResponse<T> res) where T : BacklogItem
+		{
+			if (res.IsSuccess)
 			{
-				res = Project.UpdateTicketAsync(ticket).Result;
+				return res.Content;
 			}
-			if (!res.IsSuccess)
-			{
-				Debug.LogError(string.Join(", ", res.Errors.Select(x => x.Message)));
-				return null;
-			}
-			return res.Content;
+			Debug.LogError(string.Join(", ", res.Errors.Select(x => x.Message)));
+			return null;
 		}
 
 		/// <summary>
