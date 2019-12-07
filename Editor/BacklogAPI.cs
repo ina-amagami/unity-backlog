@@ -13,6 +13,8 @@ using UnityEngine;
 using NBacklog;
 using NBacklog.DataTypes;
 using NBacklog.OAuth2;
+using System.IO;
+using UnityEditor;
 
 namespace Backlog
 {
@@ -65,9 +67,20 @@ namespace Backlog
 		/// <summary>
 		/// プロジェクト情報の取得
 		/// </summary>
-		public async void LoadProjectInfo(System.Action onSuccess)
+		public async void LoadProjectInfo(Action onSuccess)
 		{
 			APIData = BacklogAPIData.Load();
+
+			// エディタが再生中かつ一時停止中だと認証時にawaitで止まってしまうので、キャッシュがない時は一時停止を解除する
+			bool isPaused = EditorApplication.isPaused;
+			if (EditorApplication.isPlaying)
+			{
+				bool isCached = File.Exists($"{Application.dataPath}/../{APIData.CacheFileName}");
+				if (!isCached)
+				{
+					EditorApplication.isPaused = false;
+				}
+			}
 
 			// 認証
 			var client = new BacklogClient(APIData.SpaceKey, APIData.Domain);
@@ -78,6 +91,8 @@ namespace Backlog
 				RedirectUri = APIData.RedirectURI,
 				CredentialsCachePath = APIData.CacheFileName,
 			});
+
+			EditorApplication.isPaused = isPaused;
 
 			// 各種データ取得
 			Space = client.GetSpaceAsync().Result.Content;
@@ -90,7 +105,7 @@ namespace Backlog
 
 			onSuccess?.Invoke();
 		}
-		
+
 		/// <summary>
 		/// キーからチケットを取得
 		/// </summary>
@@ -126,7 +141,7 @@ namespace Backlog
 			}
 			return GetResult(res);
 		}
-		
+
 		/// <summary>
 		/// スペースに添付ファイルを追加
 		/// </summary>
