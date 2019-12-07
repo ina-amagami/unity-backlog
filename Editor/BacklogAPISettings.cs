@@ -50,48 +50,70 @@ namespace Backlog
 			so = BacklogAPIData.GetSerializedObject();
 		}
 
+		/// <summary>
+		/// 他の設定項目と比べて左側の余白が無いので、GUIScopeを作って付ける
+		/// </summary>
+		internal class GUIScope : GUI.Scope
+		{
+			public GUIScope()
+			{
+				GUILayout.BeginHorizontal();
+				GUILayout.Space(6f);
+				GUILayout.BeginVertical();
+			}
+
+			protected override void CloseScope()
+			{
+				GUILayout.EndVertical();
+				GUILayout.EndHorizontal();
+			}
+		}
+
 		public override void OnGUI(string searchContext)
 		{
-			// プロパティの表示
-			var iterator = so.GetIterator();
-			EditorGUI.BeginChangeCheck();
-			while (iterator.NextVisible(true))
+			using (new GUIScope())
 			{
-				bool isScript = iterator.name.Equals("m_Script");
-				if (isScript) { GUI.enabled = false; }
-				
-				EditorGUILayout.PropertyField(iterator);
-				
-				if (isScript) { GUI.enabled = true; }
-			}
-			if (EditorGUI.EndChangeCheck())
-			{
-				so.ApplyModifiedProperties();
-			}
-			
-			EditorGUILayout.Space();
-			
-			// データ検証用ボタン
-			using (new EditorGUILayout.HorizontalScope())
-			{
-				if (GUILayout.Button("スペースを開く"))
+				// プロパティの表示
+				var iterator = so.GetIterator();
+				EditorGUI.BeginChangeCheck();
+				while (iterator.NextVisible(true))
 				{
-					var data = BacklogAPIData.Load();
-					Application.OpenURL($"https://{data.SpaceKey}.{data.Domain}/projects/{data.ProjectKey}");
+					bool isScript = iterator.name.Equals("m_Script");
+					if (isScript) { GUI.enabled = false; }
+
+					EditorGUILayout.PropertyField(iterator);
+
+					if (isScript) { GUI.enabled = true; }
 				}
-				if (GUILayout.Button("認証テスト"))
+				if (EditorGUI.EndChangeCheck())
 				{
-					var backlogAPI = new BacklogAPI();
-					try
+					so.ApplyModifiedProperties();
+				}
+
+				EditorGUILayout.Space();
+
+				// データ検証用ボタン
+				using (new EditorGUILayout.HorizontalScope())
+				{
+					if (GUILayout.Button("スペースを開く"))
 					{
-						backlogAPI.LoadProjectInfo(() =>
-						{
-							EditorUtility.DisplayDialog("認証成功", "BacklogAPIの認証に成功しました。", "OK");
-						});
+						var data = BacklogAPIData.Load();
+						Application.OpenURL($"https://{data.SpaceKey}.{data.Domain}/projects/{data.ProjectKey}");
 					}
-					catch (System.Exception e)
+					if (GUILayout.Button("認証テスト"))
 					{
-						Debug.LogException(e);
+						var backlogAPI = new BacklogAPI();
+						try
+						{
+							backlogAPI.LoadProjectInfo(() =>
+							{
+								EditorUtility.DisplayDialog("認証成功", "BacklogAPIの認証に成功しました。", "OK");
+							});
+						}
+						catch (System.Exception e)
+						{
+							Debug.LogException(e);
+						}
 					}
 				}
 			}
