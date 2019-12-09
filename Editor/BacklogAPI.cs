@@ -67,7 +67,7 @@ namespace Backlog
 		/// <summary>
 		/// プロジェクト情報の取得
 		/// </summary>
-		public async void LoadProjectInfo(Action onSuccess)
+		public async void LoadProjectInfo(Action onSuccess = null)
 		{
 			APIData = BacklogAPIData.Load();
 
