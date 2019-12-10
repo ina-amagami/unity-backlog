@@ -4,7 +4,7 @@ Unityで[BacklogAPI](https://developer.nulab.com/ja/docs/backlog/#backlog-api-%E
   
 Unityエディタ上からバグ報告するためのツールを作成するのに必要な機能しか実装していません。ご了承下さい。
   
-詳しい解説は**こちら** ※12/11 Qiitaにて公開予定
+詳しい解説は[**こちら**](https://qiita.com/ina-amagami/items/899c5de42681abe32a8f)
 
 ## ライセンス条項
 
