@@ -92,6 +92,12 @@ namespace Backlog
 
 				EditorGUILayout.Space();
 
+				// Backlog Developerサイトを開く
+				if (GUILayout.Button("Backlogアプリケーション登録ページ"))
+				{
+					Application.OpenURL("https://backlog.com/developer/applications/");
+				}
+
 				// データ検証用ボタン
 				using (new EditorGUILayout.HorizontalScope())
 				{
